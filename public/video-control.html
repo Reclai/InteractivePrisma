@@ -20,7 +20,7 @@
 
     /* Set the background image to cover the entire viewport */
     body {
-      background-image: url('images/BG.png');
+      background-image: url('images/BGanim.gif');
       /* Update the path as needed */
       background-size: cover;
       /* Cover the entire viewport */
@@ -32,16 +32,20 @@
       /* Fix the background image position */
     }
 
-    .header-container {
-      text-align: center;
-      /* Center text for the header */
-      position: relative;
-      /* Establish a positioning context */
+    .center-container {
+      display: flex;
+      /* Use flexbox layout */
+      flex-direction: column;
+      /* Stack items vertically */
+      align-items: center;
+      /* Center items horizontally */
+      justify-content: center;
+      /* Center items vertically (optional, depending on desired spacing) */
       padding-top: 50px;
       /* Add some padding */
       color: white;
-      height: 100px;
-      /* Adjust based on your design needs */
+      min-height: 100vh;
+      /* Make container at least the height of the viewport */
       width: 100%;
       /* Take full width */
       z-index: 1;
@@ -82,12 +86,14 @@
 </head>
 
 <body>
-  <div class="header-container">
+  <div class="center-container">
     <h1 class="mb-4">Video Control Panel</h1>
     <!-- Thumbnail display -->
     <img id="videoThumbnail" src="" alt="Current Video Thumbnail"
-      style="max-width: 60%;height: auto;margin-top: 0px;" />
+      style="max-width: 60%; height: auto; margin-top: 0px;" />
+    <h1 class="mb-4">Tower Bersama Group</h1>
   </div>
+
   <button id="prevButton" class="btn btn-primary btn-control">
     <img src="images/backArrow.png" alt="Previous Video" />
   </button>
@@ -105,7 +111,7 @@
         thumbnailImg.src = thumbnailPath; // Make sure this matches the URL pattern served by Express
         console.log(`Updating thumbnail to: ${thumbnailPath}`); // Debugging
       }
-    });    
+    });
 
     // Function to emit the 'nextVideo' event
     const playNext = () => {
