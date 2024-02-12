@@ -20,16 +20,11 @@
 
     /* Set the background image to cover the entire viewport */
     body {
-      background-image: url('images/BGanim.gif');
-      /* Update the path as needed */
-      background-size: cover;
-      /* Cover the entire viewport */
-      background-position: center;
-      /* Center the image */
-      background-repeat: no-repeat;
-      /* Do not repeat the image */
-      background-attachment: fixed;
-      /* Fix the background image position */
+      background-image: url('images/Layer2frame.png'), url('images/BGanim.gif');
+      background-size: 82%, cover;
+      background-position: center, center;
+      background-repeat: no-repeat, no-repeat;
+      background-attachment: fixed, fixed;
     }
 
     .center-container {
@@ -87,11 +82,10 @@
 
 <body>
   <div class="center-container">
-    <h1 class="mb-4">Video Control Panel</h1>
     <!-- Thumbnail display -->
     <img id="videoThumbnail" src="" alt="Current Video Thumbnail"
       style="max-width: 60%; height: auto; margin-top: 0px;" />
-    <h1 class="mb-4">Tower Bersama Group</h1>
+    <p style="font-size: 36px;">TOWER BERSAMA GROUP</p>
   </div>
 
   <button id="prevButton" class="btn btn-primary btn-control">
