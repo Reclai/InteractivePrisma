@@ -23,6 +23,7 @@
     socket.on('playVideo', (videoSrc) => {
       videoPlayer.src = `/videos/${videoSrc}`;
       videoPlayer.load();
+      videoPlayer.setAttribute("loop", "");
       videoPlayer.play();
     });
 
