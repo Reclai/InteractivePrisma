@@ -194,39 +194,44 @@ app.post('/upload-thumbnail', uploadThumbnail.single('thumbnail'), (req, res) =>
 io.on('connection', (socket) => {
   console.log('A user connected');
 
-  // Send the current list of videos to the newly connected client
-  socket.emit('videoList', videos);
-
-  const updateClientWithCurrentVideoAndThumbnail = () => {
+  const updateClientWithThumbnail = () => {
     if (videos.length > 0) {
       const currentVideo = videos[currentVideoIndex];
       const videoFilenameWithoutExtension = path.basename(currentVideo, path.extname(currentVideo));
       const thumbnailFilename = `${videoFilenameWithoutExtension}_thumbnail.png`;
       const thumbnailPath = `/thumbnails/${thumbnailFilename}`; // Assuming thumbnails are served from /thumbnails
 
-      // Emit both video name and thumbnail path
+      // Emit thumbnail path
       console.log(`Emitting thumbnail path: ${thumbnailPath}`); // Add this line for debugging
-      socket.emit('currentVideo', { video: currentVideo, thumbnail: thumbnailPath });
+      io.emit('thumbnailPath', thumbnailPath);
     }
   };
 
+  // Send the current list of videos to the newly connected client
+  socket.emit('videoList', videos);
+
   socket.on('nextVideo', () => {
+    // Increment the current video index
     currentVideoIndex = (currentVideoIndex + 1) % videos.length;
-    updateClientWithCurrentVideoAndThumbnail();
+    // Broadcast the new video index to all connected clients
+    io.emit('playVideo', videos[currentVideoIndex]);
+    updateClientWithThumbnail();
   });
 
   socket.on('prevVideo', () => {
+    // Decrement the current video index
     currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
-    updateClientWithCurrentVideoAndThumbnail();
+    // Broadcast the new video index to all connected clients
+    io.emit('playVideo', videos[currentVideoIndex]);
+    updateClientWithThumbnail();
   });
-
-  // Call this function to send the current video and thumbnail when a user first connects
-  updateClientWithCurrentVideoAndThumbnail();
 
   socket.on('disconnect', () => {
     console.log('User disconnected');
   });
 });
+
+app.use('/thumbnails', express.static(path.join(__dirname, 'public', 'thumbnails')));
 
 // Start the server
 server.listen(PORT, () => {

@@ -99,13 +99,13 @@
   <script>
     const socket = io();
 
-    socket.on('currentVideo', (data) => {
+    socket.on('thumbnailPath', (thumbnailPath) => {
       const thumbnailImg = document.getElementById('videoThumbnail');
       if (thumbnailImg) {
-        thumbnailImg.src = data.thumbnail; // Make sure this matches the URL pattern served by Express
-        console.log(`Updating thumbnail to: ${data.thumbnail}`); // Debugging
+        thumbnailImg.src = thumbnailPath; // Make sure this matches the URL pattern served by Express
+        console.log(`Updating thumbnail to: ${thumbnailPath}`); // Debugging
       }
-    });
+    });    
 
     // Function to emit the 'nextVideo' event
     const playNext = () => {
