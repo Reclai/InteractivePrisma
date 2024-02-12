@@ -1,0 +1,76 @@
+<!-- public/upload.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Upload</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="mb-4">Upload Video</h1>
+    
+    <form action="/upload" method="post" enctype="multipart/form-data">
+      <div class="mb-3">
+        <label for="videoFile" class="form-label">Choose Video</label>
+        <input type="file" class="form-control" id="videoFile" name="videoFile" accept="video/*" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+
+    <hr>
+
+    <h2 class="mb-4">Delete Video</h2>
+    <div class="mb-3">
+      <label for="videoToDelete" class="form-label">Select Video to Delete</label>
+      <select class="form-select" id="videoToDelete">
+        <!-- Video options will be dynamically populated -->
+      </select>
+    </div>
+    <button id="deleteButton" class="btn btn-danger">Delete Video</button>
+  </div>
+
+  <!-- Bootstrap JS and Popper.js -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-alpha2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const videoToDeleteSelect = document.getElementById('videoToDelete');
+    const deleteButton = document.getElementById('deleteButton');
+
+    // Listen for videoList events and update the video select options
+    socket.on('videoList', (videos) => {
+      // Clear existing options
+      videoToDeleteSelect.innerHTML = '';
+
+      // Populate the select element with video options
+      videos.forEach((video) => {
+        const option = document.createElement('option');
+        option.value = video;
+        option.text = video;
+        videoToDeleteSelect.appendChild(option);
+      });
+    });
+
+    // Delete the selected video when the delete button is clicked
+    deleteButton.addEventListener('click', () => {
+      const selectedVideo = videoToDeleteSelect.value;
+      if (confirm(`Are you sure you want to delete ${selectedVideo}?`)) {
+        // Send a POST request to the server to delete the video
+        fetch('/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `videoToDelete=${selectedVideo}`,
+        });
+      }
+    });
+  </script>
+</body>
+</html>

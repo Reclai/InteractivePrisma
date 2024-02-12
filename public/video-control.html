@@ -1,0 +1,126 @@
+<!-- public/video-control.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Control</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    /* Reset any default margins and padding */
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+    }
+
+    /* Set the background image to cover the entire viewport */
+    body {
+      background-image: url('images/BG.png');
+      /* Update the path as needed */
+      background-size: cover;
+      /* Cover the entire viewport */
+      background-position: center;
+      /* Center the image */
+      background-repeat: no-repeat;
+      /* Do not repeat the image */
+      background-attachment: fixed;
+      /* Fix the background image position */
+    }
+
+    .header-container {
+      text-align: center;
+      /* Center text for the header */
+      position: relative;
+      /* Establish a positioning context */
+      padding-top: 50px;
+      /* Add some padding */
+      color: white;
+      height: 100px;
+      /* Adjust based on your design needs */
+      width: 100%;
+      /* Take full width */
+      z-index: 1;
+      /* Keep it under the thumbnail if overlapping occurs */
+    }
+
+    .btn-control {
+      background: none;
+      border: none;
+      padding: 0;
+      /* Remove padding if you don't want space around the image */
+      position: absolute;
+      /* Absolute positioning relative to header-container */
+      top: 50%;
+      /* Center vertically */
+      transform: translateY(-50%);
+      /* Offset by half of its own height */
+      z-index: 2;
+    }
+
+    .btn-control img {
+      width: 100px;
+      /* or whatever size you desire */
+      height: auto;
+      /* maintain aspect ratio */
+    }
+
+    #prevButton {
+      left: 30px;
+      /* Align to the left */
+    }
+
+    #nextButton {
+      right: 30px;
+      /* Align to the right */
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header-container">
+    <h1 class="mb-4">Video Control Panel</h1>
+    <!-- Thumbnail display -->
+    <img id="videoThumbnail" src="" alt="Current Video Thumbnail"
+      style="max-width: 60%;height: auto;margin-top: 0px;" />
+  </div>
+  <button id="prevButton" class="btn btn-primary btn-control">
+    <img src="images/backArrow.png" alt="Previous Video" />
+  </button>
+  <button id="nextButton" class="btn btn-primary btn-control">
+    <img src="images/nextArrow.png" alt="Next Video" />
+  </button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    socket.on('currentVideo', (data) => {
+      const thumbnailImg = document.getElementById('videoThumbnail');
+      if (thumbnailImg) {
+        thumbnailImg.src = data.thumbnail; // Make sure this matches the URL pattern served by Express
+        console.log(`Updating thumbnail to: ${data.thumbnail}`); // Debugging
+      }
+    });
+
+    // Function to emit the 'nextVideo' event
+    const playNext = () => {
+      socket.emit('nextVideo');
+    };
+
+    // Function to emit the 'prevVideo' event
+    const playPrev = () => {
+      socket.emit('prevVideo');
+    };
+
+    // Attach click event listeners to the buttons
+    document.getElementById('nextButton').addEventListener('click', playNext);
+    document.getElementById('prevButton').addEventListener('click', playPrev);
+  </script>
+</body>
+
+</html>

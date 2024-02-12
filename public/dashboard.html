@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 200px;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            padding-top: 20px;
+        }
+
+        .sidebar a {
+            padding: 6px 8px 6px 16px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #818181;
+            display: block;
+        }
+
+        .sidebar a.active {
+            color: #f1f1f1;
+        }
+
+        .content {
+            margin-left: 200px;
+            padding: 1px 16px;
+            height: 1000px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #upload-btn {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .search-bar input[type="text"] {
+            padding: 10px;
+            margin-top: 20px;
+            font-size: 17px;
+            border: 1px solid #ccc;
+        }
+
+        .video-list table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .video-list th {
+            background-color: #f2f2f2;
+            border: 1px solid #ddd;
+            /* Add borders to table cells and headers */
+        }
+
+        .video-list td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .video-list td:last-child {
+            display: flex;
+            justify-content: space-around;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <a href="#" class="active">Overview</a>
+        <a href="#">User Management</a>
+        <a href="#">Log out</a>
+    </div>
+    <div class="content">
+        <div class="header">
+            <h1>All (56)</h1>
+            <input type="file" id="file-input" style="display: none;" accept="video/*" />
+            <!-- Bootstrap button -->
+            <button id="upload-btn" class="btn btn-primary"
+                onclick="document.getElementById('file-input').click();">UPLOAD +</button>
+        </div>
+        <div class="search-bar">
+            <input type="text" placeholder="Search...">
+        </div>
+        <div class="video-list">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Content Name</th>
+                        <th>Last Update</th>
+                        <th style="text-align: center">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="video-table-body">
+                    <!-- Video rows will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        document.getElementById('file-input').addEventListener('change', function () {
+            var file = this.files[0];
+            if (file) {
+                var formData = new FormData();
+                formData.append('videoFile', file);
+
+                // Modify this URL to the endpoint on your server that handles file uploads.
+                var uploadURL = '/upload';
+
+                fetch(uploadURL, {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            // Attempt to parse the response as JSON, but handle other content types as well
+                            const contentType = response.headers.get('content-type');
+                            if (contentType && contentType.includes('application/json')) {
+                                return response.json();
+                            } else {
+                                throw new Error('Server didn\'t respond with JSON. Upload might have been successful.');
+                            }
+                        }
+                        throw new Error('Upload failed with status: ' + response.status);
+                    })
+                    // Inside the video upload success handler, after the page reloads or success message
+                    .then(data => {
+                        console.log('Success:', data);
+                        window.location.reload(); // You might want to move or remove this line based on your logic
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        // Handle errors, possibly non-JSON responses or other issues.
+                        // You might still want to reload if you know the upload was successful.
+                        window.location.reload();
+                    });
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (e.target && e.target.classList.contains('upload-thumbnail-btn')) {
+                const videoName = e.target.getAttribute('data-video-name');
+                const input = document.querySelector(`input[data-video-name="${videoName}"]`);
+                input.click();
+            }
+        });
+        
+        document.addEventListener('change', function (e) {
+            if (e.target && e.target.classList.contains('thumbnail-upload-input')) {
+                const file = e.target.files[0];
+                const videoName = e.target.getAttribute('data-video-name');
+                if (file) {
+                    uploadThumbnail(file, videoName);
+                }
+            }
+        });
+        
+        function uploadThumbnail(file, videoName) {
+            const formData = new FormData();
+            const videoFilenameWithoutExtension = videoName.replace(/\.[^/.]+$/, "");
+            const thumbnailFilename = `${videoFilenameWithoutExtension}_thumbnail.png`;
+            console.log(thumbnailFilename);
+            formData.append('thumbnail', file, thumbnailFilename);
+        
+            fetch('/upload-thumbnail', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Thumbnail upload failed with status: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Thumbnail uploaded successfully:', data);
+                alert('Thumbnail uploaded successfully');
+                // Optionally reload or update UI to reflect the new thumbnail
+            })
+            .catch(error => {
+                console.error('Error uploading thumbnail:', error);
+                alert('Error uploading thumbnail');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const videoTableBody = document.getElementById('video-table-body');
+
+            fetch('/video-data').then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            }).then(videos => {
+                videos.forEach(video => {
+                    const row = document.createElement('tr');
+                    const lastModifiedDate = new Date(video.lastModified).toLocaleString();
+                    row.innerHTML = `
+              <td>${video.name}</td>
+              <td>${lastModifiedDate}</td>
+              <td>
+                <!-- Bootstrap styled buttons -->
+                <button class="btn btn-info update-btn" data-video-name="${video.name}">Update Content</button>
+                <button class="btn btn-danger delete-btn" onclick="deleteVideo('${video.name}')">Delete Content</button>
+                <input type="file" class="thumbnail-upload-input" data-video-name="${video.name}" accept="image/png" style="display: none;" />
+                <button class="btn btn-secondary upload-thumbnail-btn" data-video-name="${video.name}">Upload Thumbnail</button>    
+              </td>
+            `;
+                    videoTableBody.appendChild(row);
+                });
+            }).catch(error => {
+                console.error('Error fetching video data:', error);
+            });
+        });
+        function deleteVideo(videoName) {
+            if (confirm(`Are you sure you want to delete ${videoName}?`)) {
+                fetch('/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `videoToDelete=${encodeURIComponent(videoName)}`
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            // Attempt to parse the response as JSON, but handle other content types as well
+                            const contentType = response.headers.get('content-type');
+                            if (contentType && contentType.includes('application/json')) {
+                                return response.json();
+                            } else {
+                                //throw new Error('Server didn\'t respond with JSON. Delete might have been successful.');
+                                window.location.reload(); // Reload the page to update the video list.
+                            }
+                        }
+                        throw new Error('Delete failed with status: ' + response.status);
+                    })
+                    .then(data => {
+                        console.log('Video deleted:', data);
+                        window.location.reload(); // Reload the page to update the video list.
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            }
+        }
+    </script>
+    <script>
+        document.addEventListener('click', function (e) {
+            if (e.target && e.target.classList.contains('update-btn')) {
+                const currentName = e.target.getAttribute('data-video-name'); // Ensure this attribute is added to each button
+                console.log(currentName);
+                const newName = prompt(`Enter new name for the video "${currentName}":`, currentName);
+                console.log(newName);
+                if (newName && newName !== currentName) {
+                    updateVideoName(currentName, newName);
+                }
+            }
+        });
+
+        function updateVideoName(currentName, newName) {
+            const formData = new URLSearchParams();
+            formData.append('currentName', currentName);
+            formData.append('newName', newName);
+
+            fetch('/update-name', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString(),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server responded with ${response.status}`);
+                    }
+                    return response.text(); // Use .text() first to inspect the response
+                })
+                .then(text => {
+                    try {
+                        const data = JSON.parse(text); // Try to parse text as JSON
+                        console.log('Success:', data);
+                        window.location.reload();
+                    } catch (error) {
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while updating the video name.');
+                });
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.6.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</body>
+
+</html>

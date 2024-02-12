@@ -1,0 +1,43 @@
+<!-- public/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Player</title>
+</head>
+<body style="background-color: black;">
+  <video id="videoPlayer" controls autoplay style="width: 100vw; height: 100vh;">
+    <!-- Source will be updated dynamically -->
+    Your browser does not support the video tag.
+  </video>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    const videoPlayer = document.getElementById('videoPlayer');
+
+    // Listen for playVideo events and update the video source
+    socket.on('playVideo', (videoSrc) => {
+      videoPlayer.src = `/videos/${videoSrc}`;
+      videoPlayer.load();
+      videoPlayer.play();
+    });
+
+    // Toggle fullscreen when the video is clicked
+    videoPlayer.addEventListener('click', () => {
+      if (videoPlayer.requestFullscreen) {
+        videoPlayer.requestFullscreen();
+      } else if (videoPlayer.mozRequestFullScreen) { /* Firefox */
+        videoPlayer.mozRequestFullScreen();
+      } else if (videoPlayer.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+        videoPlayer.webkitRequestFullscreen();
+      } else if (videoPlayer.msRequestFullscreen) { /* IE/Edge */
+        videoPlayer.msRequestFullscreen();
+      }
+    });
+  </script>
+</body>
+</html>

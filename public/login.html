@@ -1,0 +1,43 @@
+<!-- public/login.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="text-center">
+  <form class="form-signin" id="loginForm">
+    <img class="mb-4" src="https://via.placeholder.com/150" alt="" width="72" height="72">
+    <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+    
+    <label for="inputPassword" class="sr-only">Password</label>
+    <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+    
+    <button class="btn btn-lg btn-primary btn-block mt-3" type="button" onclick="submitForm()">Proceed</button>
+  </form>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-alpha2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const hardcodedPassword = 'holo'; // Replace with your desired password
+
+    // Function to submit the form
+    const submitForm = () => {
+      const enteredPassword = document.getElementById('inputPassword').value;
+
+      // Check if the entered password matches the hardcoded password
+      if (enteredPassword === hardcodedPassword) {
+        // Redirect to the upload page with the password as a query parameter
+        window.location.href = `/upload?password=${enteredPassword}`;
+      } else {
+        alert('Authentication failed. Please try again.');
+      }
+    };
+  </script>
+</body>
+</html>
